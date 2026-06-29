@@ -1,11 +1,13 @@
 ---
+export const prerender = false;
+
 import Base from "../layouts/Base.astro";
 import PortableText from "../lib/portableText.astro";
 import { sanityFetch } from "../lib/sanity";
 import { urlFor } from "../lib/image";
 import { ABOUT } from "../lib/queries";
 
-const data = (await sanityFetch<any>(ABOUT)) ?? {};
+const data = (await sanityFetch<any>(ABOUT, { runtime: true })) ?? {};
 const portraitUrl = data.portrait ? urlFor(data.portrait)?.width(640).auto("format").url() : null;
 const metaLines = data.metaLines ?? [];
 const skillGroups = data.skillGroups ?? [];
@@ -14,7 +16,7 @@ const beliefs = data.beliefs ?? [];
 const achievements = data.achievements ?? [];
 ---
 
-<Base title="About — Tushar Jaryal">
+<Base title="About — Tushar Jaryal" runtime={true}>
   <header class="head">
     <div class="eyebrow">{data.eyebrow}</div>
     <h1>{data.heading}</h1>

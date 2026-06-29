@@ -1,27 +1,25 @@
 ---
+export const prerender = false;
+
 import Base from "../../layouts/Base.astro";
 import PortableText from "../../lib/portableText.astro";
 import { sanityFetch } from "../../lib/sanity";
 import { urlFor } from "../../lib/image";
-import { PROJECT_SLUGS, PROJECT_BY_SLUG } from "../../lib/queries";
+import { PROJECT_BY_SLUG } from "../../lib/queries";
 
-export async function getStaticPaths() {
-  const slugs = await sanityFetch<string[]>(PROJECT_SLUGS);
-  if (!slugs?.length) return [];
+const { slug } = Astro.params;
+const proj = slug
+  ? await sanityFetch<any>(PROJECT_BY_SLUG, { runtime: true, params: { slug } })
+  : null;
 
-  return Promise.all(
-    slugs.map(async (slug) => {
-      const proj = await sanityFetch(PROJECT_BY_SLUG, { params: { slug } });
-      return { params: { slug }, props: { proj } };
-    }),
-  );
+if (!proj) {
+  Astro.response.status = 404;
 }
 
-const { proj } = Astro.props as { proj: any };
 const hero = proj?.hero ? urlFor(proj.hero)?.width(1400).auto("format").url() : null;
 ---
 
-<Base title={`${proj?.name} — Tushar Jaryal`} description={proj?.summary}>
+<Base title={`${proj?.name ?? "Project not found"} — Tushar Jaryal`} description={proj?.summary} runtime={true}>
   <div class="crumb">
     <a href="/projects">projects</a> <span class="sep">/</span> <span class="accent">{proj?.name}</span>
   </div>

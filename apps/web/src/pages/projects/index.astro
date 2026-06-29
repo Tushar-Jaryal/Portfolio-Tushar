@@ -1,16 +1,18 @@
 ---
+export const prerender = false;
+
 import Base from "../../layouts/Base.astro";
 import ProjectFilter from "../../components/ProjectFilter.tsx";
 import { sanityFetch } from "../../lib/sanity";
 import { urlFor } from "../../lib/image";
 import { PROJECTS_PAGE, ALL_PROJECTS } from "../../lib/queries";
 
-const page = (await sanityFetch<any>(PROJECTS_PAGE)) ?? {};
-const projects = (await sanityFetch<any[]>(ALL_PROJECTS)) ?? [];
+const page = (await sanityFetch<any>(PROJECTS_PAGE, { runtime: true })) ?? {};
+const projects = (await sanityFetch<any[]>(ALL_PROJECTS, { runtime: true })) ?? [];
 const filters = page.filters?.length ? page.filters : ["all"];
 ---
 
-<Base title="Projects — Tushar Jaryal">
+<Base title="Projects — Tushar Jaryal" runtime={true}>
   <header class="head">
     <div>
       <div class="eyebrow">{page.eyebrow}</div>

@@ -1,28 +1,26 @@
 ---
+export const prerender = false;
+
 import Base from "../../layouts/Base.astro";
 import PortableText from "../../lib/portableText.astro";
 import ReadingProgress from "../../components/ReadingProgress.tsx";
 import { sanityFetch } from "../../lib/sanity";
-import { POST_SLUGS, POST_BY_SLUG } from "../../lib/queries";
+import { POST_BY_SLUG } from "../../lib/queries";
 
-export async function getStaticPaths() {
-  const slugs = await sanityFetch<string[]>(POST_SLUGS);
-  if (!slugs?.length) return [];
+const { slug } = Astro.params;
+const post = slug
+  ? await sanityFetch<any>(POST_BY_SLUG, { runtime: true, params: { slug } })
+  : null;
 
-  return Promise.all(
-    slugs.map(async (slug) => {
-      const post = await sanityFetch(POST_BY_SLUG, { params: { slug } });
-      return { params: { slug }, props: { post } };
-    }),
-  );
+if (!post) {
+  Astro.response.status = 404;
 }
 
-const { post } = Astro.props as { post: any };
 const fmt = (d: string) => (d ? d.replaceAll("-", ".") : "");
 const tagLine = post?.tags?.join(" · ");
 ---
 
-<Base title={`${post?.title} — Tushar Jaryal`} description={post?.excerpt}>
+<Base title={`${post?.title ?? "Post not found"} — Tushar Jaryal`} description={post?.excerpt} runtime={true}>
   <ReadingProgress client:idle />
 
   <article class="article-wrap">

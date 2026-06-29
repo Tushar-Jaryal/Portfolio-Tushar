@@ -29,11 +29,10 @@ function makeClient(useCdn: boolean): SanityClient | null {
 export const buildClient = makeClient(false);
 
 /**
- * Runtime client — useCdn:true (fast, edge-cached). Use only inside
- * prerender=false (SSR) routes like the Home page where instant-but-eventually
- * -consistent reads are fine.
+ * Runtime client — useCdn:false so published Studio edits are visible on the
+ * next request instead of waiting on the Sanity CDN cache.
  */
-export const runtimeClient = makeClient(true);
+export const runtimeClient = makeClient(false);
 
 type FetchOpts = { runtime?: boolean; params?: Record<string, unknown> };
 
