@@ -28,6 +28,11 @@ npm run build --workspace apps/web
 # Copy the build output (client + server together — one atomic unit)
 cp -R apps/web/dist "$RELEASE/dist"
 
+# The SSR runtime keeps Sanity (and other deps) external, so node_modules must
+# be resolvable at runtime. entry.mjs lives at $RELEASE/dist/server/, so Node
+# walks up to $RELEASE/node_modules — point that at the checkout's modules.
+ln -sfn "$REPO_DIR/node_modules" "$RELEASE/node_modules"
+
 # Link shared env into the release
 ln -sfn "$APP_ROOT/shared/.env" "$RELEASE/.env"
 
