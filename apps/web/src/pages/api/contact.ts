@@ -35,12 +35,25 @@ export const POST: APIRoute = async ({ request }) => {
     return json({ ok: false, error: "Message too long" }, 422);
   }
 
-  const apiKey = import.meta.env.RESEND_API_KEY;
-  const to = import.meta.env.CONTACT_TO_EMAIL;
-  const from = import.meta.env.CONTACT_FROM_EMAIL || "site@example.dev";
+  // Read at runtime from process.env (set via systemd EnvironmentFile / shared/.env)
+  // so the key isn't baked into the build and can be rotated without rebuilding.
+  // Fall back to import.meta.env for local dev.
+  const apiKey = process.env.RESEND_API_KEY ?? import.meta.env.RESEND_API_KEY;
+  const to = process.env.CONTACT_TO_EMAIL ?? import.meta.env.CONTACT_TO_EMAIL;
+  const from =
+    process.env.CONTACT_FROM_EMAIL ??
+    import.meta.env.CONTACT_FROM_EMAIL ??
+    "site@example.dev";
+
+  const smtpHost = process.env.SMTP_HOST ?? import.meta.env.SMTP_HOST;
+
+  const subjectLine = subject
+    ? `[portfolio] ${subject}`
+    : `[portfolio] message from ${name}`;
+  const text = `From: ${name} <${email}>\n\n${message}`;
 
   // No provider configured (e.g. local dev) — log and accept so the UI works.
-  if (!apiKey || !to) {
+  if (!to || (!apiKey && !smtpHost)) {
     console.log("[contact] (no email provider configured) message:", {
       name, email, subject, message,
     });
@@ -48,27 +61,39 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from,
-        to,
-        reply_to: email,
-        subject: subject ? `[portfolio] ${subject}` : `[portfolio] message from ${name}`,
-        text: `From: ${name} <${email}>\n\n${message}`,
-      }),
-    });
-    if (!res.ok) {
-      console.error("[contact] resend error:", await res.text());
-      return json({ ok: false, error: "Send failed" }, 502);
+    if (apiKey) {
+      // Option A — Resend (REST API, no SDK needed).
+      const res = await fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ from, to, reply_to: email, subject: subjectLine, text }),
+      });
+      if (!res.ok) {
+        console.error("[contact] resend error:", await res.text());
+        return json({ ok: false, error: "Send failed" }, 502);
+      }
+    } else {
+      // Option B — SMTP via Nodemailer (used when RESEND_API_KEY is blank).
+      // Dynamic import keeps nodemailer external to the SSR bundle.
+      const { default: nodemailer } = await import("nodemailer");
+      const port = Number(process.env.SMTP_PORT ?? import.meta.env.SMTP_PORT ?? 587);
+      const transporter = nodemailer.createTransport({
+        host: smtpHost,
+        port,
+        secure: port === 465, // 465 = implicit TLS; 587 = STARTTLS
+        auth: {
+          user: process.env.SMTP_USER ?? import.meta.env.SMTP_USER,
+          pass: process.env.SMTP_PASS ?? import.meta.env.SMTP_PASS,
+        },
+      });
+      await transporter.sendMail({ from, to, replyTo: email, subject: subjectLine, text });
     }
     return json({ ok: true });
   } catch (err) {
-    console.error("[contact] error:", err);
+    console.error("[contact] send error:", err);
     return json({ ok: false, error: "Send failed" }, 502);
   }
 };
