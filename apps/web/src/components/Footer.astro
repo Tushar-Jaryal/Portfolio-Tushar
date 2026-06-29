@@ -1,0 +1,35 @@
+---
+const { settings } = Astro.props as { settings?: any };
+const socialLinks = settings?.socialLinks ?? [];
+---
+
+<footer>
+  <div class="inner">
+    <div>{settings?.copyright} · <span class="accent2">$</span> {settings?.footerLine}</div>
+    <div class="social">
+      {socialLinks.map((s) => <a href={s.href}>{s.label}</a>)}
+    </div>
+  </div>
+</footer>
+
+<style>
+  footer {
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .inner {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 32px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 12px;
+    color: var(--muted);
+  }
+  .accent2 { color: var(--accent2); }
+  .social { display: flex; gap: 22px; }
+  .social a { color: var(--ink); }
+</style>

@@ -1,0 +1,20 @@
+{
+  "name": "portfolio-site",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Tushar Jaryal portfolio — Astro frontend + Sanity CMS, deployed to a self-hosted VPS.",
+  "workspaces": [
+    "apps/web",
+    "apps/studio"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace apps/web",
+    "dev:studio": "npm run dev --workspace apps/studio",
+    "build": "npm run build --workspace apps/web",
+    "build:studio": "npm run build --workspace apps/studio",
+    "preview": "npm run preview --workspace apps/web"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

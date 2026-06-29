@@ -1,0 +1,64 @@
+---
+import { toHTML } from "@portabletext/to-html";
+import { urlFor } from "./image";
+
+interface Props {
+  value?: any[];
+}
+const { value = [] } = Astro.props;
+
+const html = toHTML(value ?? [], {
+  components: {
+    types: {
+      codeBlock: ({ value }) =>
+        `<pre class="pt-pre">${escapeHtml(value?.code ?? "")}</pre>`,
+      accessibleImage: ({ value }) => {
+        const builder = urlFor(value);
+        if (!builder) return "";
+        const src = builder.width(1200).auto("format").url();
+        const alt = value?.decorative ? "" : escapeHtml(value?.alt ?? "");
+        const cap = value?.caption
+          ? `<figcaption class="pt-cap">${escapeHtml(value.caption)}</figcaption>`
+          : "";
+        return `<figure class="pt-fig"><img src="${src}" alt="${alt}" loading="lazy" />${cap}</figure>`;
+      },
+    },
+    block: {
+      h2: ({ children }) => `<h2>${children}</h2>`,
+      h3: ({ children }) => `<h3>${children}</h3>`,
+      blockquote: ({ children }) => `<blockquote class="pt-quote">${children}</blockquote>`,
+      normal: ({ children }) => `<p>${children}</p>`,
+    },
+    marks: {
+      link: ({ children, value }) =>
+        `<a class="pt-link" href="${value?.href ?? "#"}" rel="noopener">${children}</a>`,
+      code: ({ children }) => `<code class="pt-code">${children}</code>`,
+    },
+  },
+});
+
+function escapeHtml(s: string) {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+---
+
+<div class="article" set:html={html} />
+
+<style is:global>
+  .article p { margin-top: 24px; font-family: "Newsreader", serif; font-size: 21px; line-height: 1.75; color: var(--ink); }
+  .article h2 { font-family: "Space Grotesk", sans-serif; font-size: 27px; font-weight: 600; letter-spacing: -0.01em; margin-top: 52px; line-height: 1.2; }
+  .article h3 { font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; margin-top: 36px; }
+  .article ul, .article ol { margin-top: 20px; padding-left: 24px; }
+  .article li { margin-top: 10px; font-family: "Newsreader", serif; font-size: 21px; line-height: 1.6; }
+  .article strong { font-weight: 600; }
+  .pt-link { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .pt-code { font-family: "JetBrains Mono", monospace; font-size: 0.85em; background: var(--surface); padding: 2px 5px; border-radius: 3px; }
+  .pt-pre { font-family: "JetBrains Mono", monospace; font-size: 13.5px; line-height: 1.7; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px; margin-top: 28px; overflow-x: auto; color: var(--ink); white-space: pre; }
+  .pt-quote { font-family: "Newsreader", serif; font-style: italic; font-size: 24px; line-height: 1.5; border-left: 2px solid var(--accent); padding-left: 22px; margin: 36px 0; color: var(--muted); }
+  .pt-fig { margin: 32px 0; }
+  .pt-fig img { width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+  .pt-cap { font-size: 13px; color: var(--muted); margin-top: 8px; }
+</style>

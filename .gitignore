@@ -1,0 +1,29 @@
+# dependencies
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+.astro/
+apps/studio/dist/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# sanity
+apps/studio/.sanity/
+
+# logs / os
+*.log
+npm-debug.log*
+.DS_Store
+
+# editor
+.vscode/
+.idea/
+
+# deploy artifacts (releases live on the server, not in git)
+releases/
+current

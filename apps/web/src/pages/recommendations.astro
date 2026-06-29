@@ -1,0 +1,64 @@
+---
+import Base from "../layouts/Base.astro";
+import { sanityFetch } from "../lib/sanity";
+import { RECOMMENDATIONS } from "../lib/queries";
+
+const data = (await sanityFetch<any>(RECOMMENDATIONS)) ?? {};
+const recommendations = data.recommendations ?? [];
+---
+
+<Base title="Recommendations — Tushar Jaryal">
+  <header class="head">
+    <div>
+      <div class="eyebrow">{data.eyebrow}</div>
+      <h1>{data.heading}</h1>
+    </div>
+    <p class="intro">{data.intro}</p>
+  </header>
+
+  <section class="masonry">
+    {recommendations.map((r) => (
+      <div class="card">
+        <div class="quote-mark">&ldquo;</div>
+        <p class="quote">{r.quote}</p>
+        <div class="who">
+          <div class="avatar">{r.initials}</div>
+          <div class="name-role">
+            <div class="name">{r.name}</div>
+            <div class="role">{r.role}</div>
+          </div>
+          <span class="rel">{r.relationship}</span>
+        </div>
+      </div>
+    ))}
+  </section>
+
+  <section class="cta">
+    <div>
+      <div class="cta-h">We worked together?</div>
+      <div class="cta-t">I'd be grateful for a few words — and happy to return the favor.</div>
+    </div>
+    <a href="/contact" class="cta-btn">get in touch &rarr;</a>
+  </section>
+</Base>
+
+<style>
+  .head { padding: 64px 0 36px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 12px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: clamp(36px, 6vw, 68px); line-height: 1.05; letter-spacing: -0.03em; margin-top: 16px; }
+  .intro { font-size: 13px; color: var(--muted); max-width: 320px; line-height: 1.7; }
+  .masonry { columns: 2; column-gap: 24px; margin: 40px 0 80px; }
+  @media (max-width: 760px) { .masonry { columns: 1; } }
+  .card { break-inside: avoid; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 28px 26px; margin-bottom: 24px; }
+  .quote-mark { font-size: 20px; color: var(--accent); line-height: 1; font-family: "Newsreader", serif; }
+  .quote { font-family: "Newsreader", serif; font-size: 17px; line-height: 1.6; color: var(--ink); margin-top: 8px; }
+  .who { display: flex; align-items: center; gap: 12px; margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); }
+  .avatar { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: var(--bg); font-size: 13px; font-weight: 600; flex-shrink: 0; color: var(--accent2); }
+  .name { font-family: "Space Grotesk", sans-serif; font-size: 14px; font-weight: 600; }
+  .role { font-size: 11.5px; color: var(--muted); }
+  .rel { margin-left: auto; font-size: 10px; color: var(--accent2); border: 1px solid var(--line); padding: 3px 7px; border-radius: 3px; white-space: nowrap; }
+  .cta { border: 1px dashed var(--line); border-radius: 8px; padding: 40px 32px; margin-bottom: 80px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .cta-h { font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 600; }
+  .cta-t { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .cta-btn { border: 1px solid var(--ink); padding: 12px 20px; font-size: 13px; font-weight: 600; border-radius: 3px; white-space: nowrap; }
+</style>

@@ -1,0 +1,60 @@
+---
+import "../styles/global.css";
+import Nav from "../components/Nav.astro";
+import Footer from "../components/Footer.astro";
+import { sanityFetch } from "../lib/sanity";
+import { SITE_SETTINGS } from "../lib/queries";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Set true on SSR pages so settings are fetched fresh at request time. */
+  runtime?: boolean;
+}
+
+const { title, description, runtime = false } = Astro.props;
+
+// Site-wide settings come only from Sanity (no seed fallback).
+const settings = await sanityFetch<any>(SITE_SETTINGS, { runtime });
+
+const pageTitle = title ?? settings?.seo?.title ?? "Tushar Jaryal";
+const pageDesc = description ?? settings?.seo?.description ?? "";
+const canonical = new URL(Astro.url.pathname, Astro.site);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={pageDesc} />
+    <link rel="canonical" href={canonical} />
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={pageDesc} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+
+    <!-- No-flash theme init: runs before paint. -->
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem("tj-theme") || "light";
+          document.documentElement.setAttribute("data-theme", t);
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="shell">
+      <Nav settings={settings} />
+      <slot />
+    </div>
+    <Footer settings={settings} />
+  </body>
+</html>

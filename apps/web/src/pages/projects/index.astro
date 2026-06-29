@@ -1,0 +1,81 @@
+---
+import Base from "../../layouts/Base.astro";
+import ProjectFilter from "../../components/ProjectFilter.tsx";
+import { sanityFetch } from "../../lib/sanity";
+import { urlFor } from "../../lib/image";
+import { PROJECTS_PAGE, ALL_PROJECTS } from "../../lib/queries";
+
+const page = (await sanityFetch<any>(PROJECTS_PAGE)) ?? {};
+const projects = (await sanityFetch<any[]>(ALL_PROJECTS)) ?? [];
+const filters = page.filters?.length ? page.filters : ["all"];
+---
+
+<Base title="Projects — Tushar Jaryal">
+  <header class="head">
+    <div>
+      <div class="eyebrow">{page.eyebrow}</div>
+      <h1>{page.heading}</h1>
+    </div>
+    <div class="intro">{page.intro} <span class="accent2">{projects.length}</span> shown.</div>
+  </header>
+
+  <div class="filterbar">
+    <ProjectFilter client:visible filters={filters} />
+  </div>
+
+  <section class="grid">
+    {projects.map((p) => {
+      const cover = p.cover ? urlFor(p.cover)?.width(640).auto("format").url() : null;
+      return (
+        <a href={`/projects/${p.slug}`} class="pcard" data-cat={p.category}>
+          <div class="shot">
+            <span class="num">{p.num}</span>
+            {cover
+              ? <img src={cover} alt={p.cover?.alt ?? p.name} />
+              : <span class="ph">[ {p.shot} ]</span>}
+          </div>
+          <div class="body">
+            <div class="title-row"><span class="title">{p.name}</span><span class="year">{p.year}</span></div>
+            <div class="desc">{p.desc}</div>
+            <div class="tags">{p.tags?.map((t) => <span class="tag">{t}</span>)}</div>
+          </div>
+        </a>
+      );
+    })}
+  </section>
+
+  <section class="gh">
+    <div>
+      <div class="gh-h">More on GitHub</div>
+      <div class="gh-t">Smaller experiments, dotfiles, and the occasional weekend hack live in the open.</div>
+    </div>
+    <a href="https://github.com" class="gh-btn">browse repos &rarr;</a>
+  </section>
+</Base>
+
+<style>
+  .accent2 { color: var(--accent2); }
+  .head { padding: 64px 0 28px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+  .eyebrow { font-size: 12px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: clamp(36px, 6vw, 68px); line-height: 1.05; letter-spacing: -0.03em; margin-top: 16px; }
+  .intro { font-size: 13px; color: var(--muted); max-width: 340px; line-height: 1.7; }
+  .filterbar { border-bottom: 1px solid var(--line); padding-bottom: 24px; margin-bottom: 32px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 24px; margin-bottom: 90px; }
+  .pcard { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--surface); display: flex; flex-direction: column; transition: transform 0.18s ease, box-shadow 0.18s ease; }
+  .pcard:hover { transform: translateY(-4px); box-shadow: 0 12px 30px var(--shadow); }
+  .shot { aspect-ratio: 16/10; background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 11px, transparent 11px, transparent 22px); border-bottom: 1px solid var(--line); display: grid; place-items: center; position: relative; }
+  .shot img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .num { position: absolute; top: 12px; left: 12px; font-size: 11px; color: var(--accent); background: var(--bg); border: 1px solid var(--line); padding: 3px 8px; border-radius: 3px; z-index: 1; }
+  .ph { font-size: 11px; color: var(--muted); background: var(--bg); padding: 5px 9px; border: 1px solid var(--line); border-radius: 2px; }
+  .body { padding: 20px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .title-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+  .title { font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .year { font-size: 12px; color: var(--muted); }
+  .desc { font-size: 13px; color: var(--muted); line-height: 1.6; flex: 1; }
+  .tags { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 4px; }
+  .tag { font-size: 11px; color: var(--accent2); border: 1px solid var(--line); padding: 3px 8px; border-radius: 3px; }
+  .gh { border: 1px dashed var(--line); border-radius: 8px; padding: 40px 32px; margin-bottom: 80px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
+  .gh-h { font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 600; }
+  .gh-t { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .gh-btn { border: 1px solid var(--ink); padding: 12px 20px; font-size: 13px; font-weight: 600; border-radius: 3px; white-space: nowrap; }
+</style>

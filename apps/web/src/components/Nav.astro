@@ -1,0 +1,74 @@
+---
+import ThemeToggle from "./ThemeToggle.tsx";
+
+const { settings } = Astro.props as { settings?: any };
+const navItems = settings?.navItems ?? [];
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? path === "/" : path.startsWith(href);
+---
+
+<nav>
+  <a class="brand" href="/">
+    <span class="glyph">{settings?.glyph}</span>
+    <span>{settings?.brandName}<span class="muted">{settings?.brandSuffix}</span></span>
+  </a>
+  <div class="links">
+    {navItems.map((item) => (
+      <a href={item.href} class:list={["navlink", { active: isActive(item.href) }]}>
+        {item.label}
+      </a>
+    ))}
+    <ThemeToggle client:load />
+  </div>
+</nav>
+
+<style>
+  nav {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 0;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    font-size: 15px;
+  }
+  .glyph {
+    display: grid;
+    place-items: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 7px;
+    border: 1.5px solid var(--ink);
+    font-size: 16px;
+    line-height: 1;
+    white-space: nowrap;
+    letter-spacing: 2px;
+  }
+  .muted { color: var(--muted); }
+  .links {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    font-size: 13px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .navlink {
+    color: var(--muted);
+    transition: color 0.15s ease;
+  }
+  .navlink:hover,
+  .navlink.active { color: var(--ink); }
+</style>

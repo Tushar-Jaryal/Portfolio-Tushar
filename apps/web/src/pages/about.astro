@@ -1,0 +1,132 @@
+---
+import Base from "../layouts/Base.astro";
+import PortableText from "../lib/portableText.astro";
+import { sanityFetch } from "../lib/sanity";
+import { urlFor } from "../lib/image";
+import { ABOUT } from "../lib/queries";
+
+const data = (await sanityFetch<any>(ABOUT)) ?? {};
+const portraitUrl = data.portrait ? urlFor(data.portrait)?.width(640).auto("format").url() : null;
+const metaLines = data.metaLines ?? [];
+const skillGroups = data.skillGroups ?? [];
+const timeline = data.timeline ?? [];
+const beliefs = data.beliefs ?? [];
+const achievements = data.achievements ?? [];
+---
+
+<Base title="About — Tushar Jaryal">
+  <header class="head">
+    <div class="eyebrow">{data.eyebrow}</div>
+    <h1>{data.heading}</h1>
+  </header>
+
+  <section class="intro-grid">
+    <div>
+      <PortableText value={data.bio} />
+    </div>
+    <div>
+      <div class="portrait">
+        {portraitUrl
+          ? <img src={portraitUrl} alt={data.portrait?.alt ?? "Portrait"} />
+          : <span class="ph">[ portrait.jpg ]</span>}
+      </div>
+      <div class="meta">
+        {metaLines.map((m) => (
+          <div><span class="accent2">{m.key}</span> = {m.value}</div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="block-head">// toolbox</h2>
+    <div class="skills">
+      {skillGroups.map((g) => (
+        <div>
+          <div class="skill-label">{g.label}</div>
+          <div class="tags">
+            {(g.items ?? []).map((it) => <span class="tag">{it}</span>)}
+          </div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="block">
+    <h2 class="block-head">// experience.log</h2>
+    {timeline.map((t) => (
+      <div class="trow">
+        <div class="tspan">{t.span}</div>
+        <div>
+          <div class="trole"><span>{t.role}</span><span class="accent2">@ {t.org}</span></div>
+          <div class="tnote">{t.note}</div>
+        </div>
+      </div>
+    ))}
+  </section>
+
+  {achievements.length > 0 && (
+    <section class="block">
+      <h2 class="block-head">// achievements</h2>
+      {achievements.map((a) => (
+        <div class="arow">
+          <span class="akind">{a.kind}</span>
+          <div>
+            <div class="atitle">
+              {a.href ? <a href={a.href} class="alink">{a.title}</a> : a.title}
+            </div>
+            <div class="ameta">{[a.meta, a.year].filter(Boolean).join(" · ")}</div>
+          </div>
+        </div>
+      ))}
+    </section>
+  )}
+
+  <section class="beliefs">
+    <div class="eyebrow accent">// how i work</div>
+    <div class="belief-grid">
+      {beliefs.map((b) => (
+        <div>
+          <div class="bn">{b.n}</div>
+          <div class="bh">{b.h}</div>
+          <div class="bt">{b.t}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .accent { color: var(--accent); }
+  .accent2 { color: var(--accent2); }
+  .head { padding: 64px 0 40px; }
+  .eyebrow { font-size: 12px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: clamp(36px, 6vw, 68px); line-height: 1.05; letter-spacing: -0.03em; margin-top: 16px; max-width: 780px; }
+  .intro-grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 48px; align-items: start; margin-bottom: 90px; }
+  @media (max-width: 760px) { .intro-grid { grid-template-columns: 1fr; } }
+  .portrait { aspect-ratio: 4/5; border: 1px solid var(--line); border-radius: 6px; background: repeating-linear-gradient(45deg, var(--surface), var(--surface) 10px, transparent 10px, transparent 20px); display: grid; place-items: center; overflow: hidden; }
+  .portrait img { width: 100%; height: 100%; object-fit: cover; }
+  .ph { font-size: 12px; color: var(--muted); background: var(--bg); padding: 6px 10px; border: 1px solid var(--line); border-radius: 2px; }
+  .meta { font-size: 12px; color: var(--muted); margin-top: 12px; line-height: 1.7; }
+  .block { margin-bottom: 90px; }
+  .block-head { font-size: 13px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent); font-weight: 600; border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 26px; }
+  .skills { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+  .skill-label { font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 600; margin-bottom: 14px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 8px; }
+  .tag { font-size: 12px; border: 1px solid var(--line); background: var(--surface); padding: 5px 10px; border-radius: 3px; color: var(--muted); }
+  .trow { display: grid; grid-template-columns: 130px 1fr; gap: 20px; padding: 24px 8px; border-bottom: 1px solid var(--line); }
+  .tspan { font-size: 12px; color: var(--muted); padding-top: 4px; }
+  .trole { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-family: "Space Grotesk", sans-serif; font-size: 18px; font-weight: 600; }
+  .trole .accent2 { font-size: 13px; }
+  .tnote { font-size: 13.5px; color: var(--muted); margin-top: 6px; max-width: 620px; }
+  .arow { display: grid; grid-template-columns: 130px 1fr; gap: 20px; align-items: baseline; padding: 20px 8px; border-bottom: 1px solid var(--line); }
+  .akind { font-size: 11px; color: var(--accent2); border: 1px solid var(--line); padding: 3px 8px; border-radius: 3px; justify-self: start; text-transform: lowercase; }
+  .atitle { font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
+  .alink { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .ameta { font-size: 12.5px; color: var(--muted); margin-top: 5px; }
+  .beliefs { background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 44px 36px; margin-bottom: 80px; }
+  .belief-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 28px; margin-top: 20px; }
+  .bn { font-family: "Space Grotesk", sans-serif; font-size: 30px; color: var(--accent); font-weight: 600; }
+  .bh { font-family: "Space Grotesk", sans-serif; font-size: 16px; font-weight: 600; margin: 8px 0 6px; }
+  .bt { font-size: 13px; color: var(--muted); line-height: 1.6; }
+</style>

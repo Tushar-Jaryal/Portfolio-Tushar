@@ -1,0 +1,86 @@
+---
+import Base from "../../layouts/Base.astro";
+import NewsletterForm from "../../components/NewsletterForm.tsx";
+import { sanityFetch } from "../../lib/sanity";
+import { BLOG_PAGE, ALL_POSTS } from "../../lib/queries";
+
+const page = (await sanityFetch<any>(BLOG_PAGE)) ?? {};
+const posts = (await sanityFetch<any[]>(ALL_POSTS)) ?? [];
+const fmt = (d: string) => (d ? d.replaceAll("-", ".") : "");
+const featured = page.featured;
+// Don't repeat the featured post in the list below.
+const rest = posts.filter((p) => p.slug !== featured?.slug);
+---
+
+<Base title="Blog — Tushar Jaryal">
+  <header class="head">
+    <div>
+      <div class="eyebrow">{page.eyebrow}</div>
+      <h1>{page.heading}</h1>
+    </div>
+    <div class="intro">{page.intro}</div>
+  </header>
+
+  {featured && (
+    <a href={`/blog/${featured.slug}`} class="featured">
+      <div class="cover"><span class="ph">[ cover art ]</span></div>
+      <div class="fbody">
+        <div class="ftag">★ featured · {fmt(featured.date)}</div>
+        <h2 class="ftitle">{featured.title}</h2>
+        <p class="fex">{featured.excerpt}</p>
+        <div class="fmeta">{featured.readingTime} read</div>
+      </div>
+    </a>
+  )}
+
+  <section class="list">
+    {rest.map((b) => (
+      <a href={`/blog/${b.slug}`} class="row">
+        <span class="date">{fmt(b.date)}</span>
+        <div>
+          <div class="title">{b.title}</div>
+          <div class="excerpt">{b.excerpt}</div>
+          <div class="tags">{b.tags?.map((t) => <span class="tag">{t}</span>)}</div>
+        </div>
+        <span class="read">{b.readingTime}</span>
+      </a>
+    ))}
+  </section>
+
+  <section class="nlbox">
+    <div>
+      <div class="nl-h">{page.newsletterHeading}</div>
+      <div class="nl-t">{page.newsletterSubtext}</div>
+    </div>
+    <NewsletterForm client:visible />
+  </section>
+</Base>
+
+<style>
+  .head { padding: 64px 0 36px; display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; flex-wrap: wrap; border-bottom: 1px solid var(--line); }
+  .eyebrow { font-size: 12px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; }
+  h1 { font-family: "Space Grotesk", sans-serif; font-weight: 700; font-size: clamp(36px, 6vw, 68px); line-height: 1.05; letter-spacing: -0.03em; margin-top: 16px; }
+  .intro { font-size: 13px; color: var(--muted); max-width: 320px; line-height: 1.7; }
+  .featured { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; margin: 36px 0 48px; background: var(--surface); transition: box-shadow 0.18s ease; }
+  .featured:hover { box-shadow: 0 12px 30px var(--shadow); }
+  @media (max-width: 760px) { .featured { grid-template-columns: 1fr; } }
+  .cover { background: repeating-linear-gradient(45deg, var(--bg), var(--bg) 12px, transparent 12px, transparent 24px); display: grid; place-items: center; min-height: 260px; border-right: 1px solid var(--line); }
+  .ph { font-size: 12px; color: var(--muted); background: var(--bg); padding: 6px 11px; border: 1px solid var(--line); border-radius: 2px; }
+  .fbody { padding: 36px 32px; display: flex; flex-direction: column; justify-content: center; }
+  .ftag { font-size: 11px; color: var(--accent); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 14px; }
+  .ftitle { font-family: "Space Grotesk", sans-serif; font-size: clamp(24px, 3vw, 34px); font-weight: 600; letter-spacing: -0.02em; line-height: 1.1; }
+  .fex { font-family: "Newsreader", serif; font-size: 17px; color: var(--muted); margin-top: 14px; line-height: 1.6; }
+  .fmeta { font-size: 12px; color: var(--muted); margin-top: 20px; }
+  .list { margin-bottom: 60px; }
+  .row { display: grid; grid-template-columns: 120px 1fr auto; gap: 24px; align-items: baseline; padding: 26px 8px; border-bottom: 1px solid var(--line); transition: padding 0.18s ease, background 0.18s ease; }
+  .row:hover { background: var(--surface); padding-left: 18px; padding-right: 18px; }
+  .date { font-size: 12px; color: var(--muted); }
+  .title { font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+  .excerpt { font-family: "Newsreader", serif; font-size: 16px; color: var(--muted); margin-top: 8px; line-height: 1.55; }
+  .tags { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+  .tag { font-size: 11px; color: var(--accent2); border: 1px solid var(--line); padding: 3px 8px; border-radius: 3px; }
+  .read { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  .nlbox { border: 1px solid var(--line); border-radius: 8px; padding: 36px 32px; margin-bottom: 80px; display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap; background: var(--surface); }
+  .nl-h { font-family: "Space Grotesk", sans-serif; font-size: 20px; font-weight: 600; }
+  .nl-t { font-size: 13px; color: var(--muted); margin-top: 6px; }
+</style>

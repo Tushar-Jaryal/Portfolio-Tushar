@@ -1,0 +1,211 @@
+---
+// Home is server-rendered so content edits in Sanity appear instantly (no rebuild).
+export const prerender = false;
+
+import Base from "../layouts/Base.astro";
+import TypingHero from "../components/TypingHero.tsx";
+import { sanityFetch } from "../lib/sanity";
+import { HOME } from "../lib/queries";
+
+const data = (await sanityFetch<any>(HOME, { runtime: true })) ?? {};
+
+// Guard every list: a Sanity singleton may have empty/missing array fields.
+const typingWords = data.typingWords ?? [];
+const ctaButtons = data.ctaButtons ?? [];
+const whoamiLines = data.whoamiLines ?? [];
+const featuredProjects = data.featuredProjects ?? [];
+const featuredPosts = data.featuredPosts ?? [];
+const stackItems = data.stackItems ?? [];
+const stack = [...stackItems, ...stackItems]; // duplicated for seamless marquee
+---
+
+<Base runtime={true}>
+  <!-- Hero -->
+  <header class="hero">
+    <div class="hero-bg" aria-hidden="true">沙</div>
+    <div class="hero-inner">
+      {data.available && (
+        <div class="badge">
+          <span class="dot"></span>
+          {data.availabilityText}
+        </div>
+      )}
+      <h1 class="name">{data.name}<br /><span class="muted">{data.kanjiSubtitle}</span></h1>
+      <p class="tagline">{data.tagline}</p>
+      <div class="typed">
+        <span class="accent">$</span> currently focused on <TypingHero client:visible words={typingWords} />
+      </div>
+      <div class="cta-row">
+        {ctaButtons.map((b) => (
+          <a href={b.href} class:list={["btn", { primary: b.primary, ghost: !b.primary }]}>
+            {b.label}{b.primary && <span>&rarr;</span>}
+          </a>
+        ))}
+      </div>
+    </div>
+  </header>
+
+  <!-- whoami terminal -->
+  <section class="terminal">
+    <div class="term-bar">
+      <span class="d d1"></span><span class="d d2"></span><span class="d d3"></span>
+      <span class="term-label">~/whoami</span>
+    </div>
+    <div class="term-body">
+      {whoamiLines.map((l) => (
+        <div><span class="accent2">{l.key}</span> <span class="muted">=</span> {l.value}</div>
+      ))}
+      <div class="comment"># open to research collabs, advisory, and interesting hard problems</div>
+    </div>
+  </section>
+
+  <!-- Selected work -->
+  <section class="block">
+    <div class="block-head">
+      <h2>// selected work</h2>
+      <a href="/projects" class="more">all projects &rarr;</a>
+    </div>
+    {featuredProjects.map((p) => (
+      <a href={p.href} class="work-row">
+        <span class="work-num">{p.num}</span>
+        <div>
+          <div class="work-title-row">
+            <span class="work-title">{p.name}</span><span class="work-tag">{p.tag}</span>
+          </div>
+          <div class="work-desc">{p.desc}</div>
+        </div>
+        <div class="work-meta"><span class="muted">{p.year}</span><span class="accent">&rarr;</span></div>
+      </a>
+    ))}
+  </section>
+
+  <!-- Latest writing -->
+  <section class="block">
+    <div class="block-head">
+      <h2>// latest writing</h2>
+      <a href="/blog" class="more">all posts &rarr;</a>
+    </div>
+    {featuredPosts.map((b) => (
+      <a href={b.href} class="post-row">
+        <span class="post-date">{b.date}</span>
+        <div>
+          <div class="post-title">{b.title}</div>
+          <div class="post-excerpt">{b.excerpt}</div>
+          <div class="post-meta">{b.meta}</div>
+        </div>
+      </a>
+    ))}
+  </section>
+
+  <!-- Stack marquee -->
+  <section class="marquee-wrap">
+    <span class="marquee-label">// stack</span>
+    <div class="marquee-mask">
+      <div class="marquee">
+        {stack.map((s) => <span>{s}</span>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-banner">
+    <div>
+      <div class="cta-eyebrow">// let's build something</div>
+      <h2 class="cta-heading">{data.ctaHeading}</h2>
+    </div>
+    <a href={data.ctaButtonHref} class="cta-btn">{data.ctaButtonLabel} &rarr;</a>
+  </section>
+</Base>
+
+<style>
+  .muted { color: var(--muted); }
+  .accent { color: var(--accent); }
+  .accent2 { color: var(--accent2); }
+
+  /* Hero */
+  .hero { padding: 72px 0 56px; position: relative; }
+  .hero-bg {
+    position: absolute; right: -10px; top: 30px; font-size: 200px; line-height: 1;
+    color: var(--line); font-weight: 700; pointer-events: none; user-select: none; z-index: 0;
+  }
+  .hero-inner { position: relative; z-index: 1; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 10px; font-size: 12px; color: var(--muted);
+    border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 999px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent2); display: inline-block; }
+  .name {
+    font-family: "Space Grotesk", sans-serif; font-weight: 700;
+    font-size: clamp(42px, 7vw, 86px); line-height: 1.02; letter-spacing: -0.03em; margin: 26px 0 0;
+  }
+  .tagline { font-size: clamp(16px, 2vw, 21px); max-width: 620px; margin-top: 24px; color: var(--ink); }
+  .typed { margin-top: 22px; font-size: 15px; color: var(--muted); }
+  .cta-row { display: flex; gap: 14px; margin-top: 38px; flex-wrap: wrap; }
+  .btn { padding: 13px 22px; font-size: 13px; font-weight: 600; border-radius: 3px; display: inline-flex; align-items: center; gap: 8px; }
+  .btn.primary { background: var(--ink); color: var(--bg); }
+  .btn.ghost { border: 1px solid var(--line); }
+
+  /* Terminal */
+  .terminal { border: 1px solid var(--line); background: var(--surface); border-radius: 6px; overflow: hidden; margin-bottom: 96px; }
+  .term-bar { display: flex; align-items: center; gap: 8px; padding: 11px 16px; border-bottom: 1px solid var(--line); }
+  .d { width: 11px; height: 11px; border-radius: 50%; }
+  .d1 { background: var(--accent); }
+  .d2 { background: var(--muted); opacity: 0.5; }
+  .d3 { background: var(--accent2); }
+  .term-label { margin-left: 8px; font-size: 12px; color: var(--muted); }
+  .term-body { padding: 22px 20px; font-size: 13.5px; line-height: 1.9; }
+  .comment { margin-top: 8px; color: var(--muted); }
+
+  /* Blocks */
+  .block { margin-bottom: 96px; }
+  .block-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 8px;
+  }
+  .block-head h2 {
+    font-family: "Space Grotesk", sans-serif; font-size: 13px; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+  }
+  .more { font-size: 12px; color: var(--muted); }
+
+  .work-row {
+    display: grid; grid-template-columns: 54px 1fr auto; gap: 18px; align-items: center;
+    padding: 26px 8px; border-bottom: 1px solid var(--line); transition: padding 0.18s ease, background 0.18s ease;
+  }
+  .work-row:hover { background: var(--surface); padding-left: 18px; padding-right: 18px; }
+  .work-num { font-family: "Space Grotesk", sans-serif; font-size: 14px; color: var(--muted); }
+  .work-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .work-title { font-family: "Space Grotesk", sans-serif; font-size: 22px; font-weight: 600; letter-spacing: -0.01em; }
+  .work-tag { font-size: 11px; color: var(--accent2); }
+  .work-desc { font-size: 13px; color: var(--muted); margin-top: 5px; max-width: 560px; }
+  .work-meta { display: flex; align-items: center; gap: 18px; font-size: 12px; }
+  .work-meta .accent { font-size: 18px; }
+
+  .post-row {
+    display: grid; grid-template-columns: 130px 1fr; gap: 20px; padding: 22px 8px;
+    border-bottom: 1px solid var(--line); transition: padding 0.18s ease, background 0.18s ease;
+  }
+  .post-row:hover { background: var(--surface); padding-left: 18px; padding-right: 18px; }
+  .post-date { font-size: 12px; color: var(--muted); padding-top: 4px; }
+  .post-title { font-family: "Space Grotesk", sans-serif; font-size: 19px; font-weight: 500; letter-spacing: -0.01em; }
+  .post-excerpt { font-size: 13px; color: var(--muted); margin-top: 6px; }
+  .post-meta { font-size: 11px; color: var(--accent2); margin-top: 10px; }
+
+  /* Marquee */
+  .marquee-wrap {
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden;
+    padding: 20px 0; margin-bottom: 96px; display: flex; align-items: center; gap: 18px;
+  }
+  .marquee-label { font-size: 11px; color: var(--muted); white-space: nowrap; letter-spacing: 0.06em; }
+  .marquee-mask { overflow: hidden; flex: 1; -webkit-mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+  .marquee { display: flex; gap: 40px; width: max-content; animation: marq 28s linear infinite; font-size: 14px; color: var(--muted); }
+
+  /* CTA */
+  .cta-banner {
+    background: var(--ink); color: var(--bg); border-radius: 8px; padding: 56px 40px; margin-bottom: 80px;
+    display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap;
+  }
+  .cta-eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; opacity: 0.6; }
+  .cta-heading { font-family: "Space Grotesk", sans-serif; font-size: clamp(26px, 4vw, 40px); font-weight: 600; letter-spacing: -0.02em; margin-top: 12px; max-width: 560px; line-height: 1.1; }
+  .cta-btn { background: var(--accent); color: #fff; padding: 15px 26px; font-size: 14px; font-weight: 600; border-radius: 3px; white-space: nowrap; }
+</style>

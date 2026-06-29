@@ -1,0 +1,121 @@
+/* Design system ported from the .dc.html mockups — single source of truth. */
+
+@import "@fontsource/space-grotesk/400.css";
+@import "@fontsource/space-grotesk/500.css";
+@import "@fontsource/space-grotesk/600.css";
+@import "@fontsource/space-grotesk/700.css";
+@import "@fontsource/jetbrains-mono/400.css";
+@import "@fontsource/jetbrains-mono/500.css";
+@import "@fontsource/jetbrains-mono/600.css";
+@import "@fontsource/jetbrains-mono/700.css";
+@import "@fontsource/newsreader/400.css";
+@import "@fontsource/newsreader/500.css";
+@import "@fontsource/newsreader/400-italic.css";
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --bg: #f0eadd;
+  --surface: #f8f4ea;
+  --ink: #221d16;
+  --muted: #756b5d;
+  --line: #ddd4c4;
+  --accent: #bf5a2b;
+  --accent2: #5e7d55;
+  --shadow: rgba(40, 32, 20, 0.08);
+}
+
+html[data-theme="dark"] {
+  --bg: #161310;
+  --surface: #201b15;
+  --ink: #ece4d5;
+  --muted: #988e7e;
+  --line: #332d25;
+  --accent: #e58a52;
+  --accent2: #9ab584;
+  --shadow: rgba(0, 0, 0, 0.4);
+}
+
+html,
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: "JetBrains Mono", monospace;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+
+body {
+  transition: background 0.35s ease, color 0.35s ease;
+  background-image: radial-gradient(var(--line) 1px, transparent 1px);
+  background-size: 26px 26px;
+}
+
+::selection {
+  background: var(--accent);
+  color: #fff;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* Shared text styles */
+.prose {
+  font-family: "Newsreader", serif;
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.serif {
+  font-family: "Newsreader", serif;
+}
+
+/* Layout container used by most pages */
+.shell {
+  min-height: 100vh;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 28px;
+}
+
+/* Animations */
+@keyframes blink {
+  0%, 49% { opacity: 1; }
+  50%, 100% { opacity: 0; }
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes marq {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+/* Form fields (contact) */
+input,
+textarea {
+  font-family: inherit;
+  font-size: 14px;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 13px 15px;
+  width: 100%;
+  outline: none;
+}
+input:focus,
+textarea:focus {
+  border-color: var(--accent);
+}
+::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
