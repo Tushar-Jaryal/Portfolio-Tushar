@@ -4,6 +4,7 @@ export default function ContactForm() {
   const [label, setLabel] = useState("send message");
   const [note, setNote] = useState("// this message is sent to my inbox");
   const [done, setDone] = useState(false);
+  const [loadedAt] = useState(() => Date.now());
 
   const onSubmit = async (e: Event) => {
     e.preventDefault();
@@ -15,7 +16,7 @@ export default function ContactForm() {
       const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, _ts: Date.now() }),
+        body: JSON.stringify({ ...data, _ts: loadedAt }),
       });
       if (res.ok) {
         setDone(true);
