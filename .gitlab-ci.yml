@@ -1,0 +1,61 @@
+stages:
+  - build
+  - deploy
+
+variables:
+  WEB_IMAGE: $CI_REGISTRY_IMAGE/web
+  CMS_IMAGE: $CI_REGISTRY_IMAGE/cms
+
+build-web:
+  stage: build
+  tags: [vps]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - apps/web/**/*
+        - package.json
+        - package-lock.json
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker build -f apps/web/Dockerfile -t "$WEB_IMAGE:$CI_COMMIT_SHORT_SHA" -t "$WEB_IMAGE:latest" .
+    - docker push "$WEB_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - docker push "$WEB_IMAGE:latest"
+
+deploy-web:
+  stage: deploy
+  tags: [vps]
+  needs: ["build-web"]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - apps/web/**/*
+        - package.json
+        - package-lock.json
+  script:
+    - kubectl set image deployment/portfolio app="$WEB_IMAGE:$CI_COMMIT_SHORT_SHA" -n project-portfolio
+    - kubectl rollout status deployment/portfolio -n project-portfolio --timeout=120s
+
+build-cms:
+  stage: build
+  tags: [vps]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - apps/cms/**/*
+  script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - docker build -t "$CMS_IMAGE:$CI_COMMIT_SHORT_SHA" -t "$CMS_IMAGE:latest" apps/cms
+    - docker push "$CMS_IMAGE:$CI_COMMIT_SHORT_SHA"
+    - docker push "$CMS_IMAGE:latest"
+
+deploy-cms:
+  stage: deploy
+  tags: [vps]
+  needs: ["build-cms"]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
+      changes:
+        - apps/cms/**/*
+  script:
+    - kubectl set image deployment/payload app="$CMS_IMAGE:$CI_COMMIT_SHORT_SHA" -n project-studio
+    - kubectl rollout status deployment/payload -n project-studio --timeout=120s
