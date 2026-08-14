@@ -12,6 +12,7 @@ build-web:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       changes:
+        - apps/web/*
         - apps/web/**/*
         - package.json
         - package-lock.json
@@ -28,6 +29,7 @@ deploy-web:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       changes:
+        - apps/web/*
         - apps/web/**/*
         - package.json
         - package-lock.json
@@ -41,6 +43,7 @@ build-cms:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       changes:
+        - apps/cms/*
         - apps/cms/**/*
   script:
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
@@ -55,6 +58,7 @@ deploy-cms:
   rules:
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'
       changes:
+        - apps/cms/*
         - apps/cms/**/*
   script:
     - kubectl set image deployment/payload app="$CMS_IMAGE:$CI_COMMIT_SHORT_SHA" -n project-studio
