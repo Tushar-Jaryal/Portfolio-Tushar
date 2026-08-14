@@ -2,15 +2,12 @@
 export const prerender = false;
 
 import Base from "../../layouts/Base.astro";
-import PortableText from "../../lib/portableText.astro";
+import RichText from "../../lib/richText.astro";
 import ReadingProgress from "../../components/ReadingProgress.tsx";
-import { sanityFetch } from "../../lib/sanity";
-import { POST_BY_SLUG } from "../../lib/queries";
+import { getPostBySlug } from "../../lib/queries";
 
 const { slug } = Astro.params;
-const post = slug
-  ? await sanityFetch<any>(POST_BY_SLUG, { runtime: true, params: { slug } })
-  : null;
+const post = slug ? await getPostBySlug(slug) : null;
 
 if (!post) {
   Astro.response.status = 404;
@@ -20,7 +17,7 @@ const fmt = (d: string) => (d ? d.replaceAll("-", ".") : "");
 const tagLine = post?.tags?.join(" · ");
 ---
 
-<Base title={`${post?.title ?? "Post not found"} — Tushar Jaryal`} description={post?.excerpt} runtime={true}>
+<Base title={`${post?.title ?? "Post not found"} — Tushar Jaryal`} description={post?.excerpt}>
   <ReadingProgress client:idle />
 
   <article class="article-wrap">
@@ -34,7 +31,7 @@ const tagLine = post?.tags?.join(" · ");
 
     <div class="cover"><span class="ph">[ cover figure ]</span></div>
 
-    <PortableText value={post?.body ?? []} />
+    <RichText data={post?.body} />
 
     {post?.tags?.length > 0 && (
       <div class="tags">{post.tags.map((t) => <span class="tag">{t}</span>)}</div>

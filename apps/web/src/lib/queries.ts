@@ -1,98 +1,166 @@
-// All GROQ queries live here so they're reviewable in one place.
-// Field names mirror the Sanity schemas in apps/studio/schemaTypes.
+// Replacement for the GROQ query exports. Each function replaces one old
+// export (name noted below so the mapping is traceable): SITE_SETTINGS →
+// getSiteSettings, HOME → getHome, ABOUT → getAbout, PROJECTS_PAGE →
+// getProjectsPage, ALL_PROJECTS → getAllProjects, PROJECT_SLUGS →
+// getProjectSlugs, PROJECT_BY_SLUG → getProjectBySlug, BLOG_PAGE →
+// getBlogPage, ALL_POSTS → getAllPosts, POST_SLUGS → getPostSlugs,
+// POST_BY_SLUG → getPostBySlug, RECOMMENDATIONS → getRecommendations,
+// CONTACT → getContact. Shapes match the old GROQ projections field-for-field.
+//
+// Two fields in the original GROQ didn't map to anything in the schema
+// (`tag` on featuredProjects, `meta` on blogPage.featured) — using the
+// closest equivalent field, flagged inline below.
 
-const imageFields = `asset, "alt": alt, caption, credit, decorative`;
+import { payloadFetch } from './cms'
 
-export const SITE_SETTINGS = /* groq */ `
-*[_type == "siteSettings"][0]{
-  glyph, brandName, brandSuffix,
-  navItems[]{label, href},
-  footerLine, copyright,
-  socialLinks[]{label, href},
-  seo{title, description, ogImage{${imageFields}}}
-}`;
+export async function getSiteSettings() {
+  return payloadFetch<any>('/globals/siteSettings', { depth: 2 })
+}
 
-export const HOME = /* groq */ `
-*[_type == "homePage"][0]{
-  available, availabilityText,
-  name, kanjiSubtitle, tagline,
-  typingWords,
-  ctaButtons[]{label, href, primary},
-  whoamiLines[]{key, value},
-  "featuredProjects": featuredProjects[]->{
-    "num": number, name, tag, year, "href": "/projects/" + slug.current, "desc": summary
-  },
-  "featuredPosts": featuredPosts[]->{
-    "date": date, title, excerpt,
-    "meta": readingTime + " read · " + array::join(tags, " · "),
-    "href": "/blog/" + slug.current
-  },
-  stackItems,
-  ctaHeading, ctaButtonLabel, ctaButtonHref
-}`;
+export async function getHome() {
+  const home = await payloadFetch<any>('/globals/homePage', { depth: 2 })
+  if (!home) return null
+  return {
+    ...home,
+    featuredProjects: (home.featuredProjects ?? []).map((p: any) => ({
+      num: p.number,
+      name: p.name,
+      tag: p.category ?? null, // ⚠ see note above — using `category` in place of the nonexistent `tag`
+      year: p.year,
+      href: `/projects/${p.slug}`,
+      desc: p.summary,
+    })),
+    featuredPosts: (home.featuredPosts ?? []).map((p: any) => ({
+      date: p.date,
+      title: p.title,
+      excerpt: p.excerpt,
+      meta: `${p.readingTime ?? ''} read · ${(p.tags ?? []).join(' · ')}`,
+      href: `/blog/${p.slug}`,
+    })),
+  }
+}
 
-export const ABOUT = /* groq */ `
-*[_type == "aboutPage"][0]{
-  eyebrow, heading, bio, portrait{${imageFields}},
-  metaLines[]{key, value},
-  skillGroups[]{label, items},
-  timeline[]{span, role, org, note},
-  beliefs[]{n, h, t},
-  achievements[]{kind, title, meta, year, href}
-}`;
+export async function getAbout() {
+  return payloadFetch<any>('/globals/aboutPage', { depth: 2 })
+}
 
-export const PROJECTS_PAGE = /* groq */ `
-*[_type == "projectsPage"][0]{ eyebrow, heading, intro, filters }`;
+export async function getProjectsPage() {
+  return payloadFetch<any>('/globals/projectsPage', { depth: 1 })
+}
 
-export const ALL_PROJECTS = /* groq */ `
-*[_type == "project"] | order(order asc, year desc){
-  "num": number, name, "slug": slug.current, year, category,
-  tags, "shot": shotCaption, "desc": summary, cover{${imageFields}}
-}`;
+export async function getAllProjects() {
+  const res = await payloadFetch<{ docs: any[] }>('/projects', {
+    depth: 1,
+    params: { sort: 'order,-year', limit: 200 },
+  })
+  return (res?.docs ?? []).map((p) => ({
+    num: p.number,
+    name: p.name,
+    slug: p.slug,
+    year: p.year,
+    category: p.category,
+    tags: p.tags ?? [],
+    shot: p.shotCaption,
+    desc: p.summary,
+    cover: p.cover,
+  }))
+}
 
-export const PROJECT_SLUGS = /* groq */ `*[_type == "project" && defined(slug.current)].slug.current`;
+export async function getProjectSlugs() {
+  const res = await payloadFetch<{ docs: any[] }>('/projects', {
+    depth: 0,
+    params: { limit: 500 },
+  })
+  return (res?.docs ?? []).map((p) => p.slug).filter(Boolean)
+}
 
-export const PROJECT_BY_SLUG = /* groq */ `
-*[_type == "project" && slug.current == $slug][0]{
-  name, "slug": slug.current, year, role, status, stack,
-  tags, summary, intro, hero{${imageFields}},
-  stats[]{value, label},
-  problem, approach, outcome,
-  testimonial{quote, attribution},
-  links{source, demo},
-  "next": *[_type == "project" && order > ^.order] | order(order asc)[0]{ name, "slug": slug.current }
-}`;
+export async function getProjectBySlug(slug: string) {
+  const res = await payloadFetch<{ docs: any[] }>('/projects', {
+    depth: 2,
+    params: { 'where[slug][equals]': slug, limit: 1 },
+  })
+  const project = res?.docs?.[0]
+  if (!project) return null
 
-export const BLOG_PAGE = /* groq */ `
-*[_type == "blogPage"][0]{
-  eyebrow, heading, intro,
-  "featured": featured->{ title, "slug": slug.current, excerpt, date, readingTime, "meta": meta, cover{${imageFields}} },
-  newsletterHeading, newsletterSubtext
-}`;
+  const nextRes = await payloadFetch<{ docs: any[] }>('/projects', {
+    depth: 0,
+    params: {
+      'where[order][greater_than]': project.order,
+      sort: 'order',
+      limit: 1,
+    },
+  })
+  const next = nextRes?.docs?.[0]
 
-export const ALL_POSTS = /* groq */ `
-*[_type == "post"] | order(date desc){
-  title, "slug": slug.current, date, readingTime, excerpt, tags
-}`;
+  return {
+    ...project,
+    next: next ? { name: next.name, slug: next.slug } : null,
+  }
+}
 
-export const POST_SLUGS = /* groq */ `*[_type == "post" && defined(slug.current)].slug.current`;
+export async function getBlogPage() {
+  const page = await payloadFetch<any>('/globals/blogPage', { depth: 2 })
+  if (!page) return null
+  const featured = page.featured
+    ? {
+        title: page.featured.title,
+        slug: page.featured.slug,
+        excerpt: page.featured.excerpt,
+        date: page.featured.date,
+        readingTime: page.featured.readingTime,
+        // ⚠ see note above — computing the same "Xmin read · tags" string
+        // used elsewhere, in place of the nonexistent `meta` field.
+        meta: `${page.featured.readingTime ?? ''} read · ${(page.featured.tags ?? []).join(' · ')}`,
+        cover: page.featured.cover,
+      }
+    : null
+  return { ...page, featured }
+}
 
-export const POST_BY_SLUG = /* groq */ `
-*[_type == "post" && slug.current == $slug][0]{
-  title, "slug": slug.current, date, readingTime, tags, excerpt,
-  cover{${imageFields}}, body,
-  "related": related[]->{ title, "slug": slug.current, readingTime }
-}`;
+export async function getAllPosts() {
+  const res = await payloadFetch<{ docs: any[] }>('/posts', {
+    depth: 0,
+    params: { sort: '-date', limit: 200 },
+  })
+  return (res?.docs ?? []).map((p) => ({
+    title: p.title,
+    slug: p.slug,
+    date: p.date,
+    readingTime: p.readingTime,
+    excerpt: p.excerpt,
+    tags: p.tags ?? [],
+  }))
+}
 
-export const RECOMMENDATIONS = /* groq */ `
-*[_type == "recommendationsPage"][0]{
-  eyebrow, heading, intro,
-  recommendations[]{quote, name, role, initials, relationship}
-}`;
+export async function getPostSlugs() {
+  const res = await payloadFetch<{ docs: any[] }>('/posts', {
+    depth: 0,
+    params: { limit: 500 },
+  })
+  return (res?.docs ?? []).map((p) => p.slug).filter(Boolean)
+}
 
-export const CONTACT = /* groq */ `
-*[_type == "contactPage"][0]{
-  eyebrow, heading, intro,
-  directLinks[]{label, value, href},
-  availability{timezone, replies, openTo}
-}`;
+export async function getPostBySlug(slug: string) {
+  const res = await payloadFetch<{ docs: any[] }>('/posts', {
+    depth: 2,
+    params: { 'where[slug][equals]': slug, limit: 1 },
+  })
+  const post = res?.docs?.[0]
+  if (!post) return null
+  return {
+    ...post,
+    related: (post.related ?? []).map((r: any) => ({
+      title: r.title,
+      slug: r.slug,
+      readingTime: r.readingTime,
+    })),
+  }
+}
+
+export async function getRecommendations() {
+  return payloadFetch<any>('/globals/recommendationsPage', { depth: 1 })
+}
+
+export async function getContact() {
+  return payloadFetch<any>('/globals/contactPage', { depth: 1 })
+}

@@ -3,16 +3,15 @@ export const prerender = false;
 
 import Base from "../../layouts/Base.astro";
 import ProjectFilter from "../../components/ProjectFilter.tsx";
-import { sanityFetch } from "../../lib/sanity";
-import { urlFor } from "../../lib/image";
-import { PROJECTS_PAGE, ALL_PROJECTS } from "../../lib/queries";
+import { mediaUrl } from "../../lib/payload-image";
+import { getProjectsPage, getAllProjects } from "../../lib/queries";
 
-const page = (await sanityFetch<any>(PROJECTS_PAGE, { runtime: true })) ?? {};
-const projects = (await sanityFetch<any[]>(ALL_PROJECTS, { runtime: true })) ?? [];
+const page = (await getProjectsPage()) ?? {};
+const projects = (await getAllProjects()) ?? [];
 const filters = page.filters?.length ? page.filters : ["all"];
 ---
 
-<Base title="Projects — Tushar Jaryal" runtime={true}>
+<Base title="Projects — Tushar Jaryal">
   <header class="head">
     <div>
       <div class="eyebrow">{page.eyebrow}</div>
@@ -27,7 +26,7 @@ const filters = page.filters?.length ? page.filters : ["all"];
 
   <section class="grid">
     {projects.map((p) => {
-      const cover = p.cover ? urlFor(p.cover)?.width(640).auto("format").url() : null;
+      const cover = mediaUrl(p.cover, "card");
       return (
         <a href={`/projects/${p.slug}`} class="pcard" data-cat={p.category}>
           <div class="shot">

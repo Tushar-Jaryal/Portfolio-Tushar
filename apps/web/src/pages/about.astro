@@ -2,13 +2,12 @@
 export const prerender = false;
 
 import Base from "../layouts/Base.astro";
-import PortableText from "../lib/portableText.astro";
-import { sanityFetch } from "../lib/sanity";
-import { urlFor } from "../lib/image";
-import { ABOUT } from "../lib/queries";
+import RichText from "../lib/richText.astro";
+import { getAbout } from "../lib/queries";
+import { mediaUrl } from "../lib/payload-image";
 
-const data = (await sanityFetch<any>(ABOUT, { runtime: true })) ?? {};
-const portraitUrl = data.portrait ? urlFor(data.portrait)?.width(640).auto("format").url() : null;
+const data = (await getAbout()) ?? {};
+const portraitUrl = mediaUrl(data.portrait, "card");
 const metaLines = data.metaLines ?? [];
 const skillGroups = data.skillGroups ?? [];
 const timeline = data.timeline ?? [];
@@ -16,7 +15,7 @@ const beliefs = data.beliefs ?? [];
 const achievements = data.achievements ?? [];
 ---
 
-<Base title="About — Tushar Jaryal" runtime={true}>
+<Base title="About — Tushar Jaryal">
   <header class="head">
     <div class="eyebrow">{data.eyebrow}</div>
     <h1>{data.heading}</h1>
@@ -24,7 +23,7 @@ const achievements = data.achievements ?? [];
 
   <section class="intro-grid">
     <div>
-      <PortableText value={data.bio} />
+      <RichText data={data.bio} />
     </div>
     <div>
       <div class="portrait">

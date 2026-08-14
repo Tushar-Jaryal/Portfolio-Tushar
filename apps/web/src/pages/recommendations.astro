@@ -2,14 +2,13 @@
 export const prerender = false;
 
 import Base from "../layouts/Base.astro";
-import { sanityFetch } from "../lib/sanity";
-import { RECOMMENDATIONS } from "../lib/queries";
+import { getRecommendations } from "../lib/queries";
 
-const data = (await sanityFetch<any>(RECOMMENDATIONS, { runtime: true })) ?? {};
+const data = (await getRecommendations()) ?? {};
 const recommendations = data.recommendations ?? [];
 ---
 
-<Base title="Recommendations — Tushar Jaryal" runtime={true}>
+<Base title="Recommendations — Tushar Jaryal">
   <header class="head">
     <div>
       <div class="eyebrow">{data.eyebrow}</div>

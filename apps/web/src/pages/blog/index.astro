@@ -3,18 +3,17 @@ export const prerender = false;
 
 import Base from "../../layouts/Base.astro";
 import NewsletterForm from "../../components/NewsletterForm.tsx";
-import { sanityFetch } from "../../lib/sanity";
-import { BLOG_PAGE, ALL_POSTS } from "../../lib/queries";
+import { getBlogPage, getAllPosts } from "../../lib/queries";
 
-const page = (await sanityFetch<any>(BLOG_PAGE, { runtime: true })) ?? {};
-const posts = (await sanityFetch<any[]>(ALL_POSTS, { runtime: true })) ?? [];
+const page = (await getBlogPage()) ?? {};
+const posts = (await getAllPosts()) ?? [];
 const fmt = (d: string) => (d ? d.replaceAll("-", ".") : "");
 const featured = page.featured;
 // Don't repeat the featured post in the list below.
 const rest = posts.filter((p) => p.slug !== featured?.slug);
 ---
 
-<Base title="Blog — Tushar Jaryal" runtime={true}>
+<Base title="Blog — Tushar Jaryal">
   <header class="head">
     <div>
       <div class="eyebrow">{page.eyebrow}</div>

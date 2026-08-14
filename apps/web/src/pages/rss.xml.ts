@@ -1,12 +1,11 @@
 import rss from "@astrojs/rss";
 import type { APIContext } from "astro";
-import { sanityFetch } from "../lib/sanity";
-import { ALL_POSTS } from "../lib/queries";
+import { getAllPosts } from "../lib/queries";
 
 export const prerender = false;
 
 export async function GET(context: APIContext) {
-  const posts = (await sanityFetch<any[]>(ALL_POSTS, { runtime: true })) ?? [];
+  const posts = (await getAllPosts()) ?? [];
 
   return rss({
     title: "Tushar Jaryal — Blog",

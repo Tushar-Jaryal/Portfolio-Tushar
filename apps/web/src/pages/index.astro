@@ -4,10 +4,9 @@ export const prerender = false;
 
 import Base from "../layouts/Base.astro";
 import TypingHero from "../components/TypingHero.tsx";
-import { sanityFetch } from "../lib/sanity";
-import { HOME } from "../lib/queries";
+import { getHome } from "../lib/queries";
 
-const data = (await sanityFetch<any>(HOME, { runtime: true })) ?? {};
+const data = (await getHome()) ?? {};
 
 // Guard every list: a Sanity singleton may have empty/missing array fields.
 const typingWords = data.typingWords ?? [];
@@ -19,7 +18,7 @@ const stackItems = data.stackItems ?? [];
 const stack = [...stackItems, ...stackItems]; // duplicated for seamless marquee
 ---
 
-<Base runtime={true}>
+<Base>
   <!-- Hero -->
   <header class="hero">
     <div class="hero-bg" aria-hidden="true">沙</div>

@@ -3,15 +3,14 @@ export const prerender = false;
 
 import Base from "../layouts/Base.astro";
 import ContactForm from "../components/ContactForm.tsx";
-import { sanityFetch } from "../lib/sanity";
-import { CONTACT } from "../lib/queries";
+import { getContact } from "../lib/queries";
 
-const data = (await sanityFetch<any>(CONTACT, { runtime: true })) ?? {};
+const data = (await getContact()) ?? {};
 const directLinks = data.directLinks ?? [];
 const availability = data.availability ?? { timezone: "", replies: "", openTo: [] };
 ---
 
-<Base title="Contact — Tushar Jaryal" description={data.intro} runtime={true}>
+<Base title="Contact — Tushar Jaryal" description={data.intro}>
   <header class="head">
     <div class="eyebrow">{data.eyebrow}</div>
     <h1>{data.heading}</h1>

@@ -2,24 +2,21 @@
 export const prerender = false;
 
 import Base from "../../layouts/Base.astro";
-import PortableText from "../../lib/portableText.astro";
-import { sanityFetch } from "../../lib/sanity";
-import { urlFor } from "../../lib/image";
-import { PROJECT_BY_SLUG } from "../../lib/queries";
+import RichText from "../../lib/richText.astro";
+import { mediaUrl } from "../../lib/payload-image";
+import { getProjectBySlug } from "../../lib/queries";
 
 const { slug } = Astro.params;
-const proj = slug
-  ? await sanityFetch<any>(PROJECT_BY_SLUG, { runtime: true, params: { slug } })
-  : null;
+const proj = slug ? await getProjectBySlug(slug) : null;
 
 if (!proj) {
   Astro.response.status = 404;
 }
 
-const hero = proj?.hero ? urlFor(proj.hero)?.width(1400).auto("format").url() : null;
+const hero = mediaUrl(proj?.hero, "hero");
 ---
 
-<Base title={`${proj?.name ?? "Project not found"} — Tushar Jaryal`} description={proj?.summary} runtime={true}>
+<Base title={`${proj?.name ?? "Project not found"} — Tushar Jaryal`} description={proj?.summary}>
   <div class="crumb">
     <a href="/projects">projects</a> <span class="sep">/</span> <span class="accent">{proj?.name}</span>
   </div>
@@ -55,23 +52,23 @@ const hero = proj?.hero ? urlFor(proj.hero)?.width(1400).auto("format").url() : 
     </section>
   )}
 
-  {proj?.problem?.length > 0 && (
+  {proj?.problem && (
     <section class="seg">
       <div class="seg-label"># the problem</div>
-      <PortableText value={proj.problem} />
+      <RichText data={proj.problem} />
     </section>
   )}
-  {proj?.approach?.length > 0 && (
+  {proj?.approach && (
     <section class="seg">
       <div class="seg-label"># the approach</div>
-      <PortableText value={proj.approach} />
+      <RichText data={proj.approach} />
     </section>
   )}
-  {proj?.outcome?.length > 0 && (
+  {proj?.outcome && (
     <section class="seg">
       <div class="seg-label"># the outcome</div>
       <div>
-        <PortableText value={proj.outcome} />
+        <RichText data={proj.outcome} />
         {proj?.testimonial?.quote && (
           <blockquote class="tq">"{proj.testimonial.quote}" — {proj.testimonial.attribution}</blockquote>
         )}

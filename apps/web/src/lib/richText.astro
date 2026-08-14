@@ -1,0 +1,30 @@
+---
+// Replacement for portableText.astro. Renders Payload's Lexical richText
+// JSON via the default HTML converters — see richtext-html.ts for what's
+// covered and what's a deliberate follow-up (custom image/codeBlock nodes).
+import { richTextToHTML } from "./richtext-html";
+
+interface Props {
+  data?: unknown;
+}
+const { data } = Astro.props;
+const html = richTextToHTML(data);
+---
+
+<div class="article" set:html={html} />
+
+<style is:global>
+  .article p { margin-top: 24px; font-family: "Newsreader", serif; font-size: 21px; line-height: 1.75; color: var(--ink); }
+  .article h2 { font-family: "Space Grotesk", sans-serif; font-size: 27px; font-weight: 600; letter-spacing: -0.01em; margin-top: 52px; line-height: 1.2; }
+  .article h3 { font-family: "Space Grotesk", sans-serif; font-size: 21px; font-weight: 600; margin-top: 36px; }
+  .article ul, .article ol { margin-top: 20px; padding-left: 24px; }
+  .article li { margin-top: 10px; font-family: "Newsreader", serif; font-size: 21px; line-height: 1.6; }
+  .article strong { font-weight: 600; }
+  .article a { color: var(--accent); text-decoration: underline; text-underline-offset: 3px; }
+  .article code { font-family: "JetBrains Mono", monospace; font-size: 0.85em; background: var(--surface); padding: 2px 5px; border-radius: 3px; }
+  .article pre { font-family: "JetBrains Mono", monospace; font-size: 13.5px; line-height: 1.7; background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 20px 22px; margin-top: 28px; overflow-x: auto; color: var(--ink); white-space: pre; }
+  .article blockquote { font-family: "Newsreader", serif; font-style: italic; font-size: 24px; line-height: 1.5; border-left: 2px solid var(--accent); padding-left: 22px; margin: 36px 0; color: var(--muted); }
+  .article figure { margin: 32px 0; }
+  .article figure img { width: 100%; border: 1px solid var(--line); border-radius: 8px; }
+  .article figcaption { font-size: 13px; color: var(--muted); margin-top: 8px; }
+</style>
