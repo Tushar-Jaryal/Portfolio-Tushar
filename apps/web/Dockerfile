@@ -15,7 +15,12 @@ RUN npm ci
 
 FROM base AS builder
 WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
+# Copy the whole /app tree from deps, not just /app/node_modules: npm
+# workspaces nests a dep in apps/web/node_modules instead of hoisting to
+# root/node_modules whenever there's a version conflict blocking hoisting
+# (e.g. @payloadcms/richtext-lexical here) — copying only the root
+# node_modules silently drops those, and Rollup fails to resolve them.
+COPY --from=deps /app ./
 COPY . .
 RUN npm run build --workspace apps/web
 
