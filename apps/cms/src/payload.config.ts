@@ -46,15 +46,15 @@ const emailAdapter = process.env.SMTP_HOST
   : undefined
 
 export default buildConfig({
-  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'https://studio.tusharjaryal.in',
+  serverURL: process.env.PAYLOAD_PUBLIC_SERVER_URL || 'https://tusharjaryal.in',
   admin: {
     user: Users.slug,
     importMap: {
       baseDir: dirname,
     },
-    // studio.tusharjaryal.in already sits behind Cloudflare Access (see
-    // nginx admin-apps block) so Payload's own auth is a second layer, not
-    // the only gate.
+    // /admin is only gated by Payload's own auth now — studio.tusharjaryal.in
+    // (which sat behind Cloudflare Access) was retired; everything is served
+    // from tusharjaryal.in.
   },
   collections: [Users, Media, Projects, Posts, Recommenders, Recommendations],
   globals: [SiteSettings, HomePage, AboutPage, ProjectsPage, BlogPage, RecommendationsPage, ContactPage],

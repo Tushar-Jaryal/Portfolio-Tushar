@@ -1,7 +1,7 @@
 # portfolio-site
 
 Tushar Jaryal's Payload CMS site, deployed to a self-hosted k3s cluster at
-**studio.tusharjaryal.in** and **tusharjaryal.in**.
+**tusharjaryal.in**.
 
 ```
 portfolio-site/
@@ -15,8 +15,12 @@ portfolio-site/
 Payload CMS (Next.js) running as a single app that serves both the public
 site and the `/admin` editing UI, backed by Postgres. Built into a container
 image and deployed to the `project-studio` namespace on the k3s cluster;
-Traefik routes both `studio.tusharjaryal.in` and `tusharjaryal.in` to the
-same Payload Service by Host header.
+Traefik routes `tusharjaryal.in` to the Payload Service by Host header.
+
+`/admin` is only gated by Payload's own auth (username/password) — there is
+no edge-level access gate in front of it, since the old `studio.tusharjaryal.in`
+hostname (which sat behind Cloudflare Access) was retired in favor of serving
+everything from the apex domain.
 
 ## Quick start (local)
 

@@ -1,6 +1,6 @@
 /** Canonical public origin — used for links that must resolve outside the cluster (emails, redirects). */
 export function getPublicServerURL(): string {
-  const url = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'https://demo.tusharjaryal.in'
+  const url = process.env.PAYLOAD_PUBLIC_SERVER_URL || 'https://tusharjaryal.in'
   return url.replace(/\/+$/, '')
 }
 
