@@ -74,6 +74,7 @@ export interface Config {
     posts: Post;
     recommenders: Recommender;
     recommendations: Recommendation;
+    categories: Category;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -87,6 +88,7 @@ export interface Config {
     posts: PostsSelect<false> | PostsSelect<true>;
     recommenders: RecommendersSelect<false> | RecommendersSelect<true>;
     recommendations: RecommendationsSelect<false> | RecommendationsSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -244,7 +246,7 @@ export interface Project {
   number?: string | null;
   order?: number | null;
   year?: string | null;
-  category?: ('ml infra' | 'mlops' | 'dev tools' | 'oss') | null;
+  category?: (number | null) | Category;
   tags?: string[] | null;
   featured?: boolean | null;
   cover?: {
@@ -346,6 +348,17 @@ export interface Project {
     source?: string | null;
     demo?: string | null;
   };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: number;
+  name: string;
+  slug: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -500,6 +513,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'recommendations';
         value: number | Recommendation;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: number | Category;
       } | null);
   globalSlug?: string | null;
   user:
@@ -759,6 +776,16 @@ export interface RecommendationsSelect<T extends boolean = true> {
   status?: T;
   guestName?: T;
   guestRole?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
   updatedAt?: T;
   createdAt?: T;
 }

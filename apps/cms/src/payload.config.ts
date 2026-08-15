@@ -12,6 +12,7 @@ import { Projects } from './collections/Projects'
 import { Posts } from './collections/Posts'
 import { Recommenders } from './collections/Recommenders'
 import { Recommendations } from './collections/Recommendations'
+import { Categories } from './collections/Categories'
 import { SiteSettings } from './globals/SiteSettings'
 import { HomePage } from './globals/HomePage'
 import { AboutPage } from './globals/AboutPage'
@@ -56,7 +57,7 @@ export default buildConfig({
     // (which sat behind Cloudflare Access) was retired; everything is served
     // from tusharjaryal.in.
   },
-  collections: [Users, Media, Projects, Posts, Recommenders, Recommendations],
+  collections: [Users, Media, Projects, Posts, Recommenders, Recommendations, Categories],
   globals: [SiteSettings, HomePage, AboutPage, ProjectsPage, BlogPage, RecommendationsPage, ContactPage],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

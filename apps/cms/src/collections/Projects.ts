@@ -33,8 +33,8 @@ export const Projects: CollectionConfig = {
     { name: 'year', type: 'text' },
     {
       name: 'category',
-      type: 'select',
-      options: ['ml infra', 'mlops', 'dev tools', 'oss'],
+      type: 'relationship',
+      relationTo: 'categories',
     },
     { name: 'tags', type: 'text', hasMany: true },
     { name: 'featured', type: 'checkbox', defaultValue: false, label: 'Featured on home' },
