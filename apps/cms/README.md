@@ -1,67 +1,69 @@
-# Payload Blank Template
+# cms
 
-This template comes configured with the bare minimum to get started on anything you need.
+Payload CMS app for tusharjaryal.in — Next.js, serving both the public site
+(`(frontend)`) and the `/admin` editing UI (`(payload)`), backed by Postgres.
+See the [repo root README](../../README.md) for architecture, deploy, and
+where this fits in the cluster.
 
-## Quick start
+## Local dev
 
-This template can be deployed directly from our Cloud hosting and it will setup MongoDB and cloud S3 object storage for media.
+```bash
+cp .env.example .env   # fill in DATABASE_URI, PAYLOAD_SECRET
+npm install
+npm run dev             # http://localhost:3000
+```
 
-## Quick Start - local setup
+Requires a real Postgres database — there's no local schema-push shortcut
+here (see [Migrations](#migrations) below), so point `DATABASE_URI` at an
+empty local/dev Postgres instance and run `npm run payload migrate` once
+before first use.
 
-To spin up this template locally, follow these steps:
+## Collections
 
-### Clone
+`Users`, `Media`, `Projects`, `Categories`, `Posts`, `Recommenders`,
+`Recommendations` — see `src/collections/`. Site content (nav, hero, etc.)
+lives in the globals under `src/globals/`.
 
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. If you've already cloned this repo, skip to [Development](#development).
+## Migrations
 
-### Development
+Schema changes (adding/removing fields, enabling `versions.drafts`, etc.)
+require an explicit migration — this project uses Postgres with committed
+migration files (`src/migrations/`), not Payload's dev-mode schema push.
 
-1. First [clone the repo](#clone) if you have not done so already
-2. `cd my-project && cp .env.example .env` to copy the example environment variables. You'll need to add the `MONGODB_URL` from your Cloud project to your `.env` if you want to use S3 storage and the MongoDB database that was created for you.
+```bash
+npm run payload migrate:create <name>   # generate, after changing a collection/global
+npm run payload migrate                 # apply
+npm run payload migrate:status          # check what's pending
+```
 
-3. `pnpm install && pnpm dev` to install dependencies and start the dev server
-4. open `http://localhost:3000` to open the app in your browser
+**Nothing runs migrations automatically.** The Dockerfile builds a Next.js
+`standalone` output for the runtime image, and Next's output file tracing
+prunes `node_modules/payload/dist/bin` (the CLI) out of that build — so
+`payload migrate` can't even run from the deployed container. GitLab CI's
+`deploy-cms` job only does `kubectl set image` + rollout, nothing more.
 
-That's it! Changes made in `./src` will be reflected in your app. Follow the on-screen instructions to login and create your first admin user. Then check out [Production](#production) once you're ready to build and serve your app, and [Deployment](#deployment) when you're ready to go live.
+**In practice: after any schema-changing change, run `payload migrate`
+against production yourself** (from a full checkout with `node_modules`
+installed — not the deployed image), before or immediately after the
+GitLab pipeline deploys the new code. Get `DATABASE_URI` from the
+`payload-env` secret and reach Postgres via `kubectl -n project-studio
+port-forward svc/postgres 5433:5432`. If you skip this, any endpoint
+touching the changed collection will 500 until the migration is applied —
+this bit us once already (enabling drafts on `Posts` without migrating
+first broke `/api/posts` in production for a few minutes).
 
-#### Docker (Optional)
+## Rich text / custom admin components
 
-If you prefer to use Docker for local development instead of a local MongoDB instance, the provided docker-compose.yml file can be used.
+Whenever a field's admin component set changes — a new `richText` field,
+a new block in `BlocksFeature`, any field using a custom component — you
+must regenerate the import map, or the admin will silently fail to render
+just that field (no visible field, just a
+`PayloadComponent not found in importMap` warning in server logs):
 
-To do so, follow these steps:
+```bash
+npm run generate:importmap
+```
 
-- Modify the `MONGODB_URL` in your `.env` file to `mongodb://127.0.0.1/<dbname>`
-- Modify the `docker-compose.yml` file's `MONGODB_URL` to match the above `<dbname>`
-- Run `docker-compose up` to start the database, optionally pass `-d` to run in the background.
-
-## How it works
-
-The Payload config is tailored specifically to the needs of most websites. It is pre-configured in the following ways:
-
-### Collections
-
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
-
-- #### Users (Authentication)
-
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection. It features pre-configured sizes, focal point and manual resizing to help you manage your pictures.
-
-### Docker
-
-Alternatively, you can use [Docker](https://www.docker.com) to spin up this template locally. To do so, follow these steps:
-
-1. Follow [steps 1 and 2 from above](#development), the docker-compose file will automatically use the `.env` file in your project root
-1. Next run `docker-compose up`
-1. Follow [steps 4 and 5 from above](#development) to login and create your first admin user
-
-That's it! The Docker instance will help you get up and running quickly while also standardizing the development environment across your teams.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
+Commit the resulting `src/app/(payload)/admin/importMap.js`. This is easy
+to miss because everything *else* on the form still renders fine — only
+the field depending on the missing component silently disappears.
