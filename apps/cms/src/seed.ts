@@ -308,7 +308,7 @@ async function run() {
       eyebrow: 'CONTACT',
       heading: "Let's build something that runs.",
       directLinks: [
-        { label: 'EMAIL', value: 'tushar@tusharjaryal.in', href: 'mailto:tushar@tusharjaryal.in' },
+        { label: 'EMAIL', value: 'me@tusharjaryal.in', href: 'mailto:me@tusharjaryal.in' },
         { label: 'GITHUB', href: 'https://github.com/Tushar-Jaryal' },
         { label: 'LINKEDIN', href: '#contact' },
         { label: 'RSS', href: '/blog' },
