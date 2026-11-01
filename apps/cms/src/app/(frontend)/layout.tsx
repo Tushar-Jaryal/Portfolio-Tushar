@@ -2,6 +2,7 @@ import React from 'react'
 import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
+import CookieBanner from './components/CookieBanner'
 import './styles.css'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +36,10 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
 
   return (
     <html lang="en" className={`${spaceGrotesk.variable} ${jetBrainsMono.variable}`}>
-      <body>{children}</body>
+      <body>
+        {children}
+        <CookieBanner />
+      </body>
     </html>
   )
 }

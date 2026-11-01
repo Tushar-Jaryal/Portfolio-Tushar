@@ -45,6 +45,10 @@ export default function Contact({
         )}
         <div className="footer-bar">
           <span>{settings.copyright}</span>
+          <span className="footer-legal">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+          </span>
           <span>{settings.footerLine}</span>
         </div>
       </div>

@@ -641,6 +641,89 @@ a:hover {
   font: 400 11.5px var(--font-mono);
   color: var(--text-35);
 }
+.footer-legal {
+  display: flex;
+  gap: 18px;
+}
+.footer-legal a {
+  color: var(--text-50);
+}
+.footer-legal a:hover {
+  color: var(--cyan);
+}
+
+/* ---------- Cookie notice ---------- */
+.cookie-banner {
+  position: fixed;
+  left: 50%;
+  bottom: 20px;
+  transform: translateX(-50%);
+  z-index: 100;
+  width: min(720px, calc(100% - 32px));
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 16px 20px;
+  background: rgba(11, 18, 38, 0.96);
+  border: 1px solid var(--line-strong);
+  border-radius: 12px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+.cookie-banner-text {
+  margin: 0;
+  font: 400 13px/1.55 var(--font-heading);
+  color: var(--text-65);
+}
+.cookie-banner-text strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+.cookie-banner-button {
+  flex-shrink: 0;
+  padding: 9px 22px;
+  font: 500 12px var(--font-mono);
+  color: var(--bg);
+  background: var(--cyan);
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.cookie-banner-button:hover {
+  background: var(--cyan-soft);
+}
+.cookie-banner-button:focus-visible {
+  outline: 2px solid var(--cyan-soft);
+  outline-offset: 3px;
+}
+
+/* ---------- Legal pages ---------- */
+.legal-table-wrap {
+  overflow-x: auto;
+  margin: 0 0 1.2em;
+}
+.legal-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.55;
+}
+.legal-table th,
+.legal-table td {
+  text-align: left;
+  vertical-align: top;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--line);
+}
+.legal-table th {
+  color: var(--ink);
+  font: 500 12px var(--font-mono);
+}
+.legal-table td:first-child {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  color: var(--text);
+  white-space: nowrap;
+}
 
 /* ---------- Blog index / post ---------- */
 .page-hero {
@@ -1075,5 +1158,15 @@ a:hover {
   .footer-bar {
     flex-direction: column;
     gap: 6px;
+  }
+  .footer-legal {
+    justify-content: center;
+  }
+
+  .cookie-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    bottom: 16px;
   }
 }
