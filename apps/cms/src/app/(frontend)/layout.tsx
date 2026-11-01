@@ -3,6 +3,7 @@ import { Space_Grotesk, JetBrains_Mono } from 'next/font/google'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 import CookieBanner from './components/CookieBanner'
+import LegalDialog from './components/LegalDialog'
 import './styles.css'
 
 export const dynamic = 'force-dynamic'
@@ -39,6 +40,7 @@ export default async function RootLayout(props: { children: React.ReactNode }) {
       <body>
         {children}
         <CookieBanner />
+        <LegalDialog />
       </body>
     </html>
   )

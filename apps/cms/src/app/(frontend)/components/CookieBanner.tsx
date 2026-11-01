@@ -30,7 +30,7 @@ export default function CookieBanner() {
       <p className="cookie-banner-text">
         <strong>Cookies on this site.</strong> This site only uses cookies that are needed for it to
         work: keeping signed-in recommenders logged in, and Cloudflare security checks. There is no
-        tracking or analytics. <a href="/privacy">Privacy Policy</a>
+        tracking or analytics. <a href="/privacy" data-legal="privacy">Privacy Policy</a>
       </p>
       <button type="button" className="cookie-banner-button" onClick={dismiss}>
         OK
